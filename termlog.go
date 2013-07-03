@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"fmt"
+	"time"
 )
 
 var stdout io.Writer = os.Stdout
@@ -41,5 +42,9 @@ func (w ConsoleLogWriter) LogWrite(rec *LogRecord) {
 // Close stops the logger from sending messages to standard output.  Attempts to
 // send log messages to this logger after a Close have undefined behavior.
 func (w ConsoleLogWriter) Close() {
+	for len(w) > 0 {
+		time.Sleep(5 * time.Millisecond)
+	}
 	close(w)
+	os.Stdout.Sync()
 }
