@@ -3,9 +3,9 @@
 package log4go
 
 import (
+	"fmt"
 	"io"
 	"os"
-	"fmt"
 	"time"
 )
 
@@ -39,12 +39,10 @@ func (w ConsoleLogWriter) LogWrite(rec *LogRecord) {
 	w <- rec
 }
 
-// Close stops the logger from sending messages to standard output.  Attempts to
-// send log messages to this logger after a Close have undefined behavior.
+// Close flushes the log. Once this returns all log messages will have been output
 func (w ConsoleLogWriter) Close() {
 	for len(w) > 0 {
 		time.Sleep(5 * time.Millisecond)
 	}
-	close(w)
 	os.Stdout.Sync()
 }
