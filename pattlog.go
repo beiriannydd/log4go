@@ -3,9 +3,11 @@
 package log4go
 
 import (
-	"fmt"
 	"bytes"
+	"fmt"
 	"io"
+	"os"
+	"strconv"
 )
 
 const (
@@ -21,6 +23,7 @@ type formatCacheType struct {
 }
 
 var formatCache = &formatCacheType{}
+var pid = os.Getpid()
 
 // Known format codes:
 // %T - Time (15:04:05 MST)
@@ -66,6 +69,8 @@ func FormatLogRecord(format string, rec *LogRecord) string {
 	for i, piece := range pieces {
 		if i > 0 && len(piece) > 0 {
 			switch piece[0] {
+			case 'P':
+				out.WriteString(strconv.Itoa(pid))
 			case 'T':
 				out.WriteString(cache.longTime)
 			case 't':
