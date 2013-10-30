@@ -94,25 +94,28 @@ var logRecordWriteTests = []struct {
 }
 
 func TestConsoleLogWriter(t *testing.T) {
-	console := make(ConsoleLogWriter)
-
 	r, w := io.Pipe()
-	go console.run(w)
-	defer console.Close()
+	stdout = w
+	console := NewConsoleLogWriter()
 
+	// Write
+	go func() {
+		for _, test := range logRecordWriteTests {
+			console.LogWrite(test.Record)
+		}
+	}()
+	// Read and verify
 	buf := make([]byte, 1024)
-
 	for _, test := range logRecordWriteTests {
 		name := test.Test
-
-		console.LogWrite(test.Record)
 		n, _ := r.Read(buf)
-
 		if got, want := string(buf[:n]), test.Console; got != want {
 			t.Errorf("%s:  got %q", name, got)
 			t.Errorf("%s: want %q", name, want)
 		}
 	}
+
+	stdout = os.Stdout
 }
 
 func TestFileLogWriter(t *testing.T) {

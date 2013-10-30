@@ -6,43 +6,25 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"time"
 )
 
 var stdout io.Writer = os.Stdout
 
 // This is the standard writer that prints to standard output.
-type ConsoleLogWriter chan *LogRecord
+type ConsoleLogWriter struct{}
 
 // This creates a new ConsoleLogWriter
 func NewConsoleLogWriter() ConsoleLogWriter {
-	records := make(ConsoleLogWriter, LogBufferLength)
-	go records.run(stdout)
-	return records
+	return ConsoleLogWriter{}
 }
 
-func (w ConsoleLogWriter) run(out io.Writer) {
-	var timestr string
-	var timestrAt int64
-
-	for rec := range w {
-		if at := rec.Created.UnixNano() / 1e9; at != timestrAt {
-			timestr, timestrAt = rec.Created.Format("01/02/06 15:04:05"), at
-		}
-		fmt.Fprint(out, "[", timestr, "] [", levelStrings[rec.Level], "] ", rec.Message, "\n")
-	}
-}
-
-// This is the ConsoleLogWriter's output method.  This will block if the output
-// buffer is full.
+// This is the ConsoleLogWriter's output method.
 func (w ConsoleLogWriter) LogWrite(rec *LogRecord) {
-	w <- rec
+	timestr := rec.Created.Format("01/02/06 15:04:05")
+	fmt.Fprint(stdout, "[", timestr, "] [", levelStrings[rec.Level], "] ", rec.Message, "\n")
 }
 
-// Close flushes the log. Once this returns all log messages will have been output
+// Close flushes the log. Probably don't need this any more.
 func (w ConsoleLogWriter) Close() {
-	for len(w) > 0 {
-		time.Sleep(5 * time.Millisecond)
-	}
 	os.Stdout.Sync()
 }

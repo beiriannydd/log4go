@@ -140,11 +140,6 @@ func xmlToConsoleLogWriter(filename string, props []xmlProperty, enabled bool) (
 		}
 	}
 
-	// If it's disabled, we're just checking syntax
-	if !enabled {
-		return nil, true
-	}
-
 	return NewConsoleLogWriter(), true
 }
 
