@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 )
 
 var stdout io.Writer = os.Stdout
@@ -20,7 +21,7 @@ func NewConsoleLogWriter() ConsoleLogWriter {
 
 // This is the ConsoleLogWriter's output method.
 func (w ConsoleLogWriter) LogWrite(rec *LogRecord) {
-	timestr := rec.Created.Format("01/02/06 15:04:05")
+	timestr := rec.Created.Format(time.StampMicro)
 	fmt.Fprint(stdout, "[", timestr, "] [", levelStrings[rec.Level], "] ", rec.Message, "\n")
 }
 
