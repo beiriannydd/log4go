@@ -28,6 +28,7 @@ var pid = os.Getpid()
 // Known format codes:
 // %T - Time (15:04:05 MST)
 // %t - Time (15:04)
+// %R - Real time (2006-01-02 15:04:05.999999)
 // %D - Date (2006/01/02)
 // %d - Date (01/02/06)
 // %L - Level (FNST, FINE, DEBG, TRAC, WARN, EROR, CRIT)
@@ -85,6 +86,8 @@ func FormatLogRecord(format string, rec *LogRecord) string {
 				out.WriteString(rec.Source)
 			case 'M':
 				out.WriteString(rec.Message)
+			case 'R':
+				out.WriteString(rec.Created.Format("2006-01-02 15:04:05.999999"))
 			}
 			if len(piece) > 1 {
 				out.Write(piece[1:])
