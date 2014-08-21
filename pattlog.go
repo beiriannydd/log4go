@@ -8,6 +8,8 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"sync/atomic"
+	"unsafe"
 )
 
 const (
@@ -22,7 +24,7 @@ type formatCacheType struct {
 	longTime, longDate   string
 }
 
-var formatCache = &formatCacheType{}
+var formatCache = unsafe.Pointer(&formatCacheType{})
 var pid = os.Getpid()
 
 // Known format codes:
@@ -47,20 +49,19 @@ func FormatLogRecord(format string, rec *LogRecord) string {
 	out := bytes.NewBuffer(make([]byte, 0, 64))
 	secs := rec.Created.UnixNano() / 1e9
 
-	cache := *formatCache
+	cache := *(*formatCacheType)(atomic.LoadPointer(&formatCache))
 	if cache.LastUpdateSeconds != secs {
 		month, day, year := rec.Created.Month(), rec.Created.Day(), rec.Created.Year()
 		hour, minute, second := rec.Created.Hour(), rec.Created.Minute(), rec.Created.Second()
 		zone, _ := rec.Created.Zone()
-		updated := &formatCacheType{
+		cache = formatCacheType{
 			LastUpdateSeconds: secs,
 			shortTime:         fmt.Sprintf("%02d:%02d", hour, minute),
 			shortDate:         fmt.Sprintf("%02d/%02d/%02d", month, day, year%100),
 			longTime:          fmt.Sprintf("%02d:%02d:%02d %s", hour, minute, second, zone),
 			longDate:          fmt.Sprintf("%04d/%02d/%02d", year, month, day),
 		}
-		cache = *updated
-		formatCache = updated
+		atomic.StorePointer(&formatCache, unsafe.Pointer(&cache))
 	}
 
 	// Split the string into pieces by % signs
